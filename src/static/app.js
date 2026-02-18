@@ -4,10 +4,18 @@ document.addEventListener("DOMContentLoaded", () => {
   const signupForm = document.getElementById("signup-form");
   const messageDiv = document.getElementById("message");
 
+  // Helper to show messages
+  function showMessage(text, type = "info") {
+    messageDiv.textContent = text;
+    messageDiv.className = `message ${type}`;
+    messageDiv.classList.remove("hidden");
+    setTimeout(() => messageDiv.classList.add("hidden"), 5000);
+  }
+
   // Function to fetch activities from API
   async function fetchActivities() {
     try {
-      const response = await fetch("/activities");
+      const response = await fetch("/activities", { cache: "no-store" });
       const activities = await response.json();
 
       // Clear loading message and dropdown
@@ -21,11 +29,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const spotsLeft = details.max_participants - details.participants.length;
 
-        // Build participants list (pills)
+        // Build participants list with delete buttons
         let participantsHtml = "";
         if (Array.isArray(details.participants) && details.participants.length > 0) {
           participantsHtml = `<ul class="participants-list">
-            ${details.participants.map((p) => `<li>${p}</li>`).join("")}
+            ${details.participants
+              .map(
+                (p) =>
+                  `<li><span class="participant-email">${p}</span><button class="participant-delete" data-activity="${encodeURIComponent(
+                    name
+                  )}" data-email="${encodeURIComponent(p)}" aria-label="Remove participant">×</button></li>`
+              )
+              .join("")}
           </ul>`;
         } else {
           participantsHtml = `<p class="no-participants">No participants yet</p>`;
@@ -49,6 +64,35 @@ document.addEventListener("DOMContentLoaded", () => {
         option.value = name;
         option.textContent = name;
         activitySelect.appendChild(option);
+      });
+
+      // Attach delete handlers (event delegation)
+      activitiesList.querySelectorAll(".participant-delete").forEach((btn) => {
+        btn.addEventListener("click", async (e) => {
+          const encodedActivity = btn.getAttribute("data-activity");
+          const encodedEmail = btn.getAttribute("data-email");
+          const activityName = decodeURIComponent(encodedActivity);
+          const email = decodeURIComponent(encodedEmail);
+
+          if (!confirm(`Remove ${email} from ${activityName}?`)) return;
+
+          try {
+            const res = await fetch(
+              `/activities/${encodeURIComponent(activityName)}/participants?email=${encodeURIComponent(email)}`,
+              { method: "DELETE" }
+            );
+            const result = await res.json();
+                if (res.ok) {
+                  showMessage(result.message, "success");
+                  await fetchActivities();
+                } else {
+                  showMessage(result.detail || "Failed to remove participant", "error");
+                }
+          } catch (err) {
+            console.error("Error removing participant:", err);
+            showMessage("Failed to remove participant. Please try again.", "error");
+          }
+        });
       });
     } catch (error) {
       activitiesList.innerHTML = "<p>Failed to load activities. Please try again later.</p>";
