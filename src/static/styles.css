@@ -142,3 +142,58 @@ footer {
   padding: 20px;
   color: #666;
 }
+
+/* Participants section */
+.participants {
+  margin-top: 12px;
+}
+
+.no-participants {
+  margin-top: 8px;
+  font-style: italic;
+  color: #666;
+}
+
+/* Participant pills */
+.participants-list {
+  margin-top: 8px;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+}
+
+.participants-list li {
+  background: #e8f0ff;
+  color: #0d47a1;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 14px;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.03);
+}
+
+/* Participant list: hide bullets and add delete button */
+.participants-list li {
+  display: inline-flex;
+  align-items: center;
+}
+
+.participant-email {
+  margin-right: 8px;
+}
+
+.participant-delete {
+  background: transparent;
+  border: none;
+  color: #b71c1c;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0 6px;
+  border-radius: 6px;
+  line-height: 1;
+}
+
+.participant-delete:hover {
+  background: rgba(183,28,28,0.08);
+}
